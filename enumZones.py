@@ -1,13 +1,13 @@
 from enum import Enum, auto
 
-def returnRuName(Zones):
-    if (Zones == None):
+def returnRuName(zones):
+    if (zones == None):
         return "None"
-    if (Zones == Zones.eyebrows):
+    if (zones == Zones.eyebrows):
         return "Брови"
-    if (Zones == Zones.eyelids):
+    if (zones == Zones.eyelids):
         return "Веки"
-    if (Zones == Zones.lips):
+    if (zones == Zones.lips):
         return "Губы"
 
 class Zones(Enum):

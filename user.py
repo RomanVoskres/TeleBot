@@ -4,6 +4,8 @@ class User:
     last_name = None
     user_id = None
 
+    procedure = None # Процедура которую хочет клиент
+
     appointment_zone = None  # запоминает зону макияжа пользователя
     communication_method = None  # запоминает метод связи с пользователем
     want_consult = False # Может хотеть на консультацию

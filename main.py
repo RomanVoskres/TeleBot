@@ -3,9 +3,11 @@ import telebot
 from telebot import types
 import LargeMessages
 import communication_method_with_user
+import enumProcedures
 import enumZones
 import user
 from communication_method_with_user import EnumCommunicationMethod
+from enumProcedures import Procedures
 from enumZones import Zones
 
 bot = telebot.TeleBot('6483439802:AAHr5IV25iNvy23PRpnQkXNec3LtCSqDUGY')
@@ -42,6 +44,8 @@ def contact_handler(message):
         _user.user_id = user_id
 
         #Обнуление что еще не выбрано
+        _user.procedure = None
+
         _user.appointment_zone = None  # запоминает зону макияжа пользователя
         _user.communication_method = None  # запоминает метод связи с пользователем
         _user.want_consult = False  # Может хотеть на консультацию
@@ -49,18 +53,31 @@ def contact_handler(message):
         _user.delalaTattoo_v_zone = False
         _user.want_send_photo = False
 
-        message_text = f"{first_name}, очень приятно! \n Татуаж какой зоны вы хотели бы сделать?"
+        if (nowcode == "wait_contact"): # Татуаж
+            message_text = f"{first_name}, очень приятно! \n Татуаж какой зоны вы хотели бы сделать?"
 
-        nowcode = "make_appointment"
-        markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-        _buttonEyebrows = types.KeyboardButton("Брови")
-        _buttonEyelids = types.KeyboardButton("Веки")
-        _buttonLips = types.KeyboardButton("Губы")
-        _buttonCounseling = types.KeyboardButton("Хочу на консультацию")
-        markup.add(_buttonEyebrows, _buttonEyelids, _buttonLips, _buttonCounseling)
-        bot.send_message(message.chat.id, text=message_text.format(message.from_user), reply_markup=markup)
+            nowcode = "make_appointment"
+            markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+            _buttonEyebrows = types.KeyboardButton("Брови")
+            _buttonEyelids = types.KeyboardButton("Веки")
+            _buttonLips = types.KeyboardButton("Губы")
+            _buttonCounseling = types.KeyboardButton("Хочу на консультацию")
+            markup.add(_buttonEyebrows, _buttonEyelids, _buttonLips, _buttonCounseling)
+            bot.send_message(message.chat.id, text=message_text.format(message.from_user), reply_markup=markup)
+
+        elif (nowcode == "tattoo_lightening_yes"): # Осветление таттуажа
+            message_text = f"{first_name}, очень приятно! \n Что вы хотите узнать?"
+
+            nowcode = "tattoo_lightening_info"
+            markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+            _buttonPriceZones = types.KeyboardButton("Прайс на осветление татуажа")
+            _buttonMethods = types.KeyboardButton("Способы осветления")
+            markup.add(_buttonPriceZones, _buttonMethods)
+            bot.send_message(message.chat.id, text=message_text.format(message.from_user), reply_markup=markup)
+        else:
+            bot.send_message(message.chat.id, "Ошибка, попробуйте с начала.")
     else:
-        bot.send_message(message.chat.id, "Пожалуйста, отправьте контакт, используя кнопку 'Отправить контакт'.")
+        bot.send_message(message.chat.id, "Пожалуйста, отправьте контакт, используя кнопку 'Отправить контакт.")
 
 @bot.message_handler(content_types=['text'])
 def getButtons(message):
@@ -77,7 +94,7 @@ def getButtons(message):
             _buttonTattooing = types.KeyboardButton("Татуаж")
             _buttonBrighteningTattoo = types.KeyboardButton("Осветление татуажа")
             markup.add(_buttonTattooing, _buttonBrighteningTattoo)
-            bot.send_message(message.chat.id, text=LargeMessages.client_morerelevant.format(message.from_user), reply_markup=markup)
+            bot.send_message(message.chat.id, text="Что для вас сейчас актуальнее?".format(message.from_user), reply_markup=markup)
 
         elif (message.text == "👑 Я мастер"): # Мастер
             nowcode = "non"
@@ -88,18 +105,24 @@ def getButtons(message):
         if (message.text == "Татуаж"): # Татуаж
             nowcode = "client_what"
             takedMessage = True
+
             markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
             _buttonEyebrows = types.KeyboardButton("Брови")
             _buttonLips = types.KeyboardButton("Губы")
             _buttonEyelids = types.KeyboardButton("Веки")
             _buttonCamouflage = types.KeyboardButton("Камуфляж")
             markup.add(_buttonEyebrows, _buttonLips, _buttonEyelids, _buttonCamouflage)
-            bot.send_message(message.chat.id, text=LargeMessages.client_what.format(message.from_user), reply_markup=markup)
+            bot.send_message(message.chat.id, text="Что конкретно?".format(message.from_user), reply_markup=markup)
 
-        elif (message.text == "Осветление татуажа"): # Осветление татуажа
-            nowcode = "non"
+        elif (message.text == "Осветление татуажа"):
+            nowcode = "tattoo_lightening_correct"
             takedMessage = True
-            print("clear")
+
+            markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+            _buttonYes = types.KeyboardButton("Да")
+            _buttonNo = types.KeyboardButton("Нет")
+            markup.add(_buttonYes, _buttonNo)
+            bot.send_message(message.chat.id, text="У вас есть старый татуаж, который хотелось бы удалить или просто сделать светлее, правильно?".format(message.from_user), reply_markup=markup)
 
     elif (nowcode == "client_what"):
         if (message.text == "Брови"): # Брови
@@ -361,12 +384,15 @@ def getButtons(message):
 
         if (takedMessage == True):
             nowcode = "pre_root"
+
+            _user.procedure = Procedures.tattoo
+
             markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
             _buttonBack = types.KeyboardButton("Вернуться в начало")
             markup.add(_buttonBack)
             bot.send_message(message.chat.id, text=LargeMessages.appointment_final.format(message.from_user), reply_markup=markup)
 
-        sendMessageToAdmin()
+            sendMessageToAdmin()
 
     elif (nowcode == "pre_root"):
         if(message.text == "Вернуться в начало"):
@@ -378,6 +404,118 @@ def getButtons(message):
             markup.add(_buttonImClient, _buttonImMaster)
             bot.send_message(message.chat.id, text=LargeMessages.root.format(message.from_user), reply_markup=markup)
 
+    #------------------------------ТУТ ВЕТКА ОСВЕТЛЕНИЯ (Левая правая часть)------------------------------------------
+
+    elif (nowcode == "tattoo_lightening_correct"):
+        if (message.text == "Да"):
+            takedMessage = True
+            nowcode = "tattoo_lightening_yes"
+
+            markup = types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True)
+            button = types.KeyboardButton('Отправить контакты', request_contact=True)
+            markup.add(button)
+            bot.send_message(message.chat.id, "Отлично, давайте познакомимся поближе!", reply_markup=markup)
+
+        elif (message.text == "Нет"):
+            takedMessage = True
+            nowcode = "tattoo_lightening_no"
+
+            markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+            _buttonYes = types.KeyboardButton("Да")
+            _buttonGoBack = types.KeyboardButton("Обратно")
+            markup.add(_buttonYes, _buttonGoBack)
+            bot.send_message(message.chat.id, "Рассказать вам подробнее про процедуру татуажа?", reply_markup=markup)
+
+    elif (nowcode == "tattoo_lightening_no"):
+        if (message.text == "Да"):
+            takedMessage = True
+            nowcode = "client_what"
+
+            markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+            _buttonEyebrows = types.KeyboardButton("Брови")
+            _buttonLips = types.KeyboardButton("Губы")
+            _buttonEyelids = types.KeyboardButton("Веки")
+            _buttonCamouflage = types.KeyboardButton("Камуфляж")
+            markup.add(_buttonEyebrows, _buttonLips, _buttonEyelids, _buttonCamouflage)
+            bot.send_message(message.chat.id, text="Что конкретно?".format(message.from_user), reply_markup=markup)
+
+        elif (message.text == "Обратно"):
+            takedMessage = True
+            nowcode = "client_morerelevant"
+
+            markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+            _buttonTattooing = types.KeyboardButton("Татуаж")
+            _buttonBrighteningTattoo = types.KeyboardButton("Осветление татуажа")
+            markup.add(_buttonTattooing, _buttonBrighteningTattoo)
+            bot.send_message(message.chat.id, text="Что для вас сейчас актуальнее?".format(message.from_user),
+                             reply_markup=markup)
+
+    elif (nowcode == "tattoo_lightening_info"):
+        if (message.text == "Прайс на осветление татуажа" or message.text == "Дальше"):
+            takedMessage = True
+            nowcode = "tattoo_lightening_make_appointment"
+
+            image_paths = [os.path.join("other/Price/PriceDeletion", file) for file in
+                           os.listdir("other/Price/PriceDeletion") if
+                           file.endswith(('.png', '.jpg', '.jpeg'))]
+            media_group = [telebot.types.InputMediaPhoto(open(image_path, 'rb')) for image_path in image_paths]
+            bot.send_media_group(message.chat.id, media_group)
+
+            markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+            _buttonLightening = types.KeyboardButton("Осветление")
+            _buttonConsult = types.KeyboardButton("Консультация")
+            markup.add(_buttonLightening, _buttonConsult)
+            bot.send_message(message.chat.id, text="Подобрать вам время на осветление татуажа или консультацию?".format(message.from_user), reply_markup=markup)
+
+        elif (message.text == "Способы осветления"):
+            takedMessage = True
+            nowcode = "tattoo_lightening_info"
+
+            markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+            _buttonNext = types.KeyboardButton("Прайс на осветление татуажа")
+            markup.add(_buttonNext)
+            bot.send_message(message.chat.id, text=LargeMessages.aboutTattoo_lightening.format(message.from_user),
+                             reply_markup=markup)
+
+    elif (nowcode == "tattoo_lightening_make_appointment"):
+        if (message.text == "Осветление"):
+            takedMessage = True
+
+        elif (message.text == "Консультация"):
+            takedMessage = True
+            _user.want_consult = True
+
+        if (takedMessage == True):
+            nowcode = "tattoo_lightening_final"
+
+            markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+            _buttonLightening = types.KeyboardButton("Позвонил")
+            _buttonConsult = types.KeyboardButton("Отписал в воцап")
+            markup.add(_buttonLightening, _buttonConsult)
+            bot.send_message(message.chat.id, text="Вам будет удобнее, чтобы наш аминистартор позвонил или написал в воцап?".format(
+                                 message.from_user), reply_markup=markup)
+
+    elif (nowcode == "tattoo_lightening_final"):
+        if (message.text == "Позвонил"):
+            takedMessage = True
+            _user.communication_method = EnumCommunicationMethod.Call
+
+        elif (message.text == "Отписал в воцап"):
+            takedMessage = True
+            _user.communication_method = EnumCommunicationMethod.WhatsApp
+
+        if (takedMessage == True):
+            nowcode = "pre_root"
+
+            _user.procedure = Procedures.lightening_tatto
+
+            markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+            _buttonBack = types.KeyboardButton("Вернуться в начало")
+            markup.add(_buttonBack)
+            bot.send_message(message.chat.id, text=LargeMessages.appointment_final.format(message.from_user),
+                             reply_markup=markup)
+
+            sendMessageToAdmin()
 
     if (takedMessage == False):
         bot.send_message(message.chat.id, text="Пожалуйста, используйте кнопки или команду /start")
@@ -387,7 +525,8 @@ def getButtons(message):
 def sendMessageToAdmin():
     global _user
     bot.send_message(_AdminID, text="Новая запись! \n\n"
-                                    f"Имя/Фамилия: {_user.first_name} {_user.last_name} \n"
+                                    f"Имя/Фамилия: {_user.first_name} {_user.last_name} \n\n"
+                                    f"Услуга: {enumProcedures.returnRuName(_user.procedure)}\n"
                                     f"Зона таттуажа: {enumZones.returnRuName(_user.appointment_zone)}\n"
                                     f"Делал ли клиент таттуаж в этой зоне: {_user.delalaTattoo_v_zone}\n"
                                     f"Если делал, то в Бровушке?: {_user.delalaTattoo_v_Broowushka}\n"
