@@ -13,8 +13,10 @@ class User:
     delalaTattoo_v_zone = False
     want_send_photo = False
 
+    training_appointment_id = None
+
     def __init__(self, phone_number, first_name, last_name, user_id, appointment_zone, communication_method, want_consult, delalaTattoo_v_Broowushka,
-                 delalaTattoo_v_zone, want_send_photo):
+                 delalaTattoo_v_zone, want_send_photo, training_appointment_id):
         self.phone_number = phone_number
         self.first_name = first_name
         self.last_name = last_name
@@ -26,3 +28,5 @@ class User:
         self.delalaTattoo_v_Broowushka = delalaTattoo_v_Broowushka
         self.delalaTattoo_v_zone = delalaTattoo_v_zone
         self.want_send_photo = want_send_photo
+
+        self.training_appointment_id = training_appointment_id

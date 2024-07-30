@@ -87,22 +87,29 @@ def getButtons(message):
     global _user
 
     if (nowcode == "root"):
-        if (message.text == "👩 Я клиент"): # Клиент
+        if (message.text == "👩 Я клиент"):
             nowcode = "client_morerelevant"
             takedMessage = True
+
             markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
             _buttonTattooing = types.KeyboardButton("Татуаж")
             _buttonBrighteningTattoo = types.KeyboardButton("Осветление татуажа")
             markup.add(_buttonTattooing, _buttonBrighteningTattoo)
             bot.send_message(message.chat.id, text="Что для вас сейчас актуальнее?".format(message.from_user), reply_markup=markup)
 
-        elif (message.text == "👑 Я мастер"): # Мастер
-            nowcode = "non"
+        elif (message.text == "👑 Я мастер"):
+            nowcode = "master_morerelevant"
             takedMessage = True
-            print("clear")
+
+            markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+            _buttonWantKnow = types.KeyboardButton("Хочу узнать про повышение квалификации")
+            _buttonLearning = types.KeyboardButton("Хочу пройти обучение с 0")
+            _buttonPoleznyashki = types.KeyboardButton("Хочу полезняшек")
+            markup.add(_buttonWantKnow, _buttonLearning, _buttonPoleznyashki)
+            bot.send_message(message.chat.id, text=LargeMessages.aboutMaster.format(message.from_user), reply_markup=markup)
 
     elif (nowcode == "client_morerelevant"):
-        if (message.text == "Татуаж"): # Татуаж
+        if (message.text == "Татуаж"):
             nowcode = "client_what"
             takedMessage = True
 
@@ -125,28 +132,28 @@ def getButtons(message):
             bot.send_message(message.chat.id, text="У вас есть старый татуаж, который хотелось бы удалить или просто сделать светлее, правильно?".format(message.from_user), reply_markup=markup)
 
     elif (nowcode == "client_what"):
-        if (message.text == "Брови"): # Брови
+        if (message.text == "Брови"):
             nowcode = "general_point_tattoo"
             takedMessage = True
             bot.send_message(message.chat.id, text=LargeMessages.aboutEyebrows.format(message.from_user))
 
-        elif (message.text == "Губы"): # Губы
+        elif (message.text == "Губы"):
             nowcode = "general_point_tattoo"
             takedMessage = True
             bot.send_message(message.chat.id, text=LargeMessages.aboutLips.format(message.from_user))
 
-        elif (message.text == "Веки"): # Веки
+        elif (message.text == "Веки"):
             nowcode = "general_point_tattoo"
             takedMessage = True
             bot.send_message(message.chat.id, text=LargeMessages.aboutEyelids.format(message.from_user))
 
-        elif (message.text == "Камуфляж"): # Камуфляж
+        elif (message.text == "Камуфляж"):
             nowcode = "general_point_tattoo"
             takedMessage = True
             bot.send_message(message.chat.id, text=LargeMessages.aboutCamouflage_0.format(message.from_user))
             bot.send_message(message.chat.id, text=LargeMessages.aboutCamouflage_1.format(message.from_user))
 
-        if (nowcode == "general_point_tattoo"):  # общая точка
+        if (nowcode == "general_point_tattoo"):
             nowcode = "from_general_point_tattoo"
             takedMessage = True
             markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -516,6 +523,205 @@ def getButtons(message):
                              reply_markup=markup)
 
             sendMessageToAdmin()
+
+    #----------------------------------------- ТУТ ВЕТКА МАСТЕРА ----------------------------------------------------
+
+    elif (nowcode == "master_morerelevant"):
+        if (message.text == "Хочу узнать про повышение квалификации"):
+            takedMessage = True
+            nowcode = "master_qualifications_price"
+
+            markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+            _buttonArrows = types.KeyboardButton("Стрелки в технике Eye Pollen")
+            _buttonEyeBrows = types.KeyboardButton("Пудровые брови")
+            _buttonLips = types.KeyboardButton("Губы")
+            _buttonVoloski = types.KeyboardButton("Волоски")
+            markup.add(_buttonArrows, _buttonEyeBrows, _buttonLips, _buttonVoloski)
+            bot.send_message(message.chat.id, text=LargeMessages.aboutQualifications.format(message.from_user), reply_markup=markup)
+
+        elif (message.text == "Хочу пройти обучение с 0"):
+            takedMessage = True
+            nowcode = "master_social"
+
+            markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+            _buttonSubscribe = types.KeyboardButton("Подписаться на соцсети")
+            markup.add(_buttonSubscribe)
+            bot.send_message(message.chat.id, text=LargeMessages.aboutLearning.format(message.from_user), reply_markup=markup)
+
+        elif (message.text == "Хочу полезняшек"):
+            takedMessage = True
+            nowcode = "master_goodies"
+
+            markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+            _buttonCheckList1 = types.KeyboardButton("Чек-лист 'Не ложится пигмент. Что делать?'и")
+            _buttonPlan = types.KeyboardButton("Контент план на месяц")
+            _buttonCheckList2 = types.KeyboardButton("Чек-лист про пигменты: 'Органика VS Минералы'")
+            _buttonGuide = types.KeyboardButton("Гайд: 'Рассылки для бьюти мастера'")
+            _buttonGoBack = types.KeyboardButton("Обратно")
+            markup.add(_buttonCheckList1, _buttonPlan, _buttonCheckList2, _buttonGuide, _buttonGoBack)
+            bot.send_message(message.chat.id, text=LargeMessages.aboutMaster.format(message.from_user), reply_markup=markup)
+
+    elif (nowcode == "master_qualifications"):
+        if (message.text == "Хочу узнать про повышение квалификации"):
+            takedMessage = True
+            nowcode = "master_qualifications_price"
+
+            markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+            _buttonArrows = types.KeyboardButton("Стрелки в технике Eye Pollen")
+            _buttonEyeBrows = types.KeyboardButton("Пудровые брови")
+            _buttonLips = types.KeyboardButton("Губы")
+            _buttonVoloski = types.KeyboardButton("Волоски")
+            markup.add(_buttonArrows, _buttonEyeBrows, _buttonLips, _buttonVoloski)
+            bot.send_message(message.chat.id, text=LargeMessages.aboutQualifications.format(message.from_user), reply_markup=markup)
+
+    elif (nowcode == "master_goodies"):
+        pdf_file_path = 'file.pdf'
+
+        if (message.text == "Чек-лист 'Не ложится пигмент. Что делать?'и"):
+            takedMessage = True
+            pdf_file_path = 'other/UsefulStuff/Не ложится пигмент check-list.pdf'
+
+        elif (message.text == "Контент план на месяц"):
+            takedMessage = True
+            pdf_file_path = 'other/UsefulStuff/Контент-план Марина Шмойлова.pdf'
+
+        elif (message.text == "Чек-лист про пигменты: 'Органика VS Минералы'"):
+            takedMessage = True
+            pdf_file_path = 'other/UsefulStuff/Органика vs Минералы check-list.pdf'
+
+        elif (message.text == "Гайд: 'Рассылки для бьюти мастера'"):
+            takedMessage = True
+            pdf_file_path = 'other/UsefulStuff/Гайд рассылки для бьюти мастера.pdf'
+
+        if (takedMessage == True):
+            nowcode = "master_goodies"
+            caption = 'Держи, что-то еще?.'
+
+            markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+            _buttonCheckList1 = types.KeyboardButton("Чек-лист 'Не ложится пигмент. Что делать?'и")
+            _buttonPlan = types.KeyboardButton("Контент план на месяц")
+            _buttonCheckList2 = types.KeyboardButton("Чек-лист про пигменты: 'Органика VS Минералы'")
+            _buttonGuide = types.KeyboardButton("Гайд: 'Рассылки для бьюти мастера'")
+            _buttonGoBack = types.KeyboardButton("Обратно")
+            markup.add(_buttonCheckList1, _buttonPlan, _buttonCheckList2, _buttonGuide, _buttonGoBack)
+
+            try:
+                with open(pdf_file_path, 'rb') as pdf_file:
+                    bot.send_document(message.chat.id, pdf_file, caption=caption, reply_markup=markup)
+            except FileNotFoundError:
+                bot.send_message(message.chat.id, "Извините, файл не найден.")
+
+        if (message.text == "Обратно"): # Эта штука специально идет после, из-за логики
+            nowcode = "master_morerelevant"
+            takedMessage = True
+
+            markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+            _buttonWantKnow = types.KeyboardButton("Хочу узнать про повышение квалификации")
+            _buttonLearning = types.KeyboardButton("Хочу пройти обучение с 0")
+            _buttonPoleznyashki = types.KeyboardButton("Хочу полезняшек")
+            markup.add(_buttonWantKnow, _buttonLearning, _buttonPoleznyashki)
+            bot.send_message(message.chat.id, text=LargeMessages.aboutMaster.format(message.from_user),
+                             reply_markup=markup)
+
+
+    elif (nowcode == "master_qualifications_price"):
+        if (message.text == "Стрелки в технике Eye Pollen" or message.text == "Пудровые брови" or message.text == "Губы"):
+            takedMessage = True
+
+            image_paths = [os.path.join("other/PriceTraining/Couple", file) for file in
+                           os.listdir("other/PriceTraining/Couple") if
+                           file.endswith(('.png', '.jpg', '.jpeg'))]
+            media_group = [telebot.types.InputMediaPhoto(open(image_path, 'rb')) for image_path in image_paths]
+            bot.send_media_group(message.chat.id, media_group)
+
+        elif (message.text == "Волоски"):
+            takedMessage = True
+
+            image_paths = [os.path.join("other/PriceTraining", file) for file in
+                           os.listdir("other/PriceTraining") if
+                           file.endswith(('.png', '.jpg', '.jpeg'))]
+            media_group = [telebot.types.InputMediaPhoto(open(image_path, 'rb')) for image_path in image_paths]
+            bot.send_media_group(message.chat.id, media_group)
+
+        if(takedMessage == True):
+            nowcode = "master_qualifications_next"
+
+            markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+            _buttonQuest = types.KeyboardButton("Задать Марине лично вопрос")
+            _buttonSocial = types.KeyboardButton("Подписаться на соцсети")
+            _buttongoodies = types.KeyboardButton("Полезняшки")
+            _buttonSubscribe = types.KeyboardButton("Записаться на обучение")
+            markup.add(_buttonQuest, _buttonSocial, _buttongoodies, _buttonSubscribe)
+            bot.send_message(message.chat.id, text="Ну что, моя королева, давай решим, куда двигаемся дальше?".format(message.from_user), reply_markup=markup)
+
+    elif (nowcode == "master_qualifications_next" or nowcode == "master_social"):
+        if (message.text == "Задать Марине лично вопрос"):
+            pass
+
+        elif (message.text == "Подписаться на соцсети"):
+            takedMessage = True
+
+            markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+            _buttonQuest = types.KeyboardButton("Задать Марине лично вопрос")
+            _buttonSocial = types.KeyboardButton("Подписаться на соцсети")
+            _buttongoodies = types.KeyboardButton("Полезняшки")
+            _buttonSubscribe = types.KeyboardButton("Записаться на обучение")
+            markup.add(_buttonQuest, _buttonSocial, _buttongoodies, _buttonSubscribe)
+            bot.send_message(message.chat.id, text=LargeMessages.aboutSocial.format(message.from_user), reply_markup=markup)
+
+        elif (message.text == "Полезняшки"):
+            takedMessage = True
+            nowcode = "master_goodies"
+
+            markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+            _buttonCheckList1 = types.KeyboardButton("Чек-лист 'Не ложится пигмент. Что делать?'и")
+            _buttonPlan = types.KeyboardButton("Контент план на месяц")
+            _buttonCheckList2 = types.KeyboardButton("Чек-лист про пигменты: 'Органика VS Минералы'")
+            _buttonGuide = types.KeyboardButton("Гайд: 'Рассылки для бьюти мастера'")
+            _buttonGoBack = types.KeyboardButton("Обратно")
+            markup.add(_buttonCheckList1, _buttonPlan, _buttonCheckList2, _buttonGuide, _buttonGoBack)
+            bot.send_message(message.chat.id, text="Выбирай, моя красотка, что тебе актуальнее.".format(message.from_user),
+                             reply_markup=markup)
+
+        elif (message.text == "Записаться на обучение"):
+            takedMessage = True
+            nowcode = "master_make_appointment"
+
+            bot.send_message(message.chat.id, text=LargeMessages.aboutTrainingAppointment.format(message.from_user), reply_markup=telebot.types.ReplyKeyboardRemove())
+            bot.send_message(message.chat.id, text=LargeMessages.formAppointment.format(message.from_user))
+
+    elif (nowcode == "master_make_appointment"):
+        if (message.text != "Записаться на обучение"):
+            takedMessage = True
+            nowcode = "master_make_appointment_final"
+
+            _user.training_appointment_id = message.message_id
+
+            markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+            _buttonYes = types.KeyboardButton("Да")
+            _buttonNo = types.KeyboardButton("Нет")
+            markup.add(_buttonYes, _buttonNo)
+            bot.send_message(message.chat.id, text="Вы проверили свою анкету и уверены, что хотите её отправить?".format(message.from_user),
+                             reply_markup=markup)
+
+    elif (nowcode == "master_make_appointment_final"):
+        if (message.text == "Да"):
+            takedMessage = True
+            nowcode = "pre_root"
+
+            markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+            _buttonBack = types.KeyboardButton("Вернуться в начало")
+            markup.add(_buttonBack)
+            bot.send_message(message.chat.id, text="Анкета отправлена. Ожидайте.".format(message.from_user), reply_markup=markup)
+
+            bot.send_message(_AdminID, text="Новая анкета на обучение!".format(message.from_user))
+            bot.forward_message(_AdminID, message.chat.id, _user.training_appointment_id)
+
+        elif (message.text == "Нет"):
+            takedMessage = True
+            nowcode = "master_make_appointment"
+            bot.send_message(message.chat.id, text="В таком случае повторите попытку.".format(message.from_user), reply_markup=telebot.types.ReplyKeyboardRemove())
+
 
     if (takedMessage == False):
         bot.send_message(message.chat.id, text="Пожалуйста, используйте кнопки или команду /start")
