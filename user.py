@@ -4,10 +4,13 @@ class User:
     last_name = None
     user_id = None
 
+    last_call_data = None
+
     procedure = None # Процедура которую хочет клиент
 
     appointment_zone = None  # запоминает зону макияжа пользователя
-    communication_method = None  # запоминает метод связи с пользователем
+    comuflage = None # камуфляж true false
+    communication_method = False  # запоминает метод связи с пользователем
     want_consult = False # Может хотеть на консультацию
     delalaTattoo_v_Broowushka = False
     delalaTattoo_v_zone = False
@@ -15,14 +18,19 @@ class User:
 
     training_appointment_id = None
 
-    def __init__(self, phone_number, first_name, last_name, user_id, appointment_zone, communication_method, want_consult, delalaTattoo_v_Broowushka,
+    def __init__(self, phone_number, first_name, last_name, user_id, last_call_data, procedure, appointment_zone, comuflage, communication_method, want_consult, delalaTattoo_v_Broowushka,
                  delalaTattoo_v_zone, want_send_photo, training_appointment_id):
         self.phone_number = phone_number
         self.first_name = first_name
         self.last_name = last_name
         self.user_id = user_id
 
+        self.last_call_data = last_call_data
+
+        self.procedure = procedure
+
         self.appointment_zone = appointment_zone
+        self.comuflage = comuflage
         self.communication_method = communication_method
         self.want_consult = want_consult
         self.delalaTattoo_v_Broowushka = delalaTattoo_v_Broowushka
