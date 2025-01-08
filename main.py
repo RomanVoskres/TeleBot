@@ -11,7 +11,7 @@ from enumProcedures import Procedures
 from enumZones import Zones
 
 bot = telebot.TeleBot('6483439802:AAHr5IV25iNvy23PRpnQkXNec3LtCSqDUGY')
-_AdminID = 772136193
+_AdminID = 391388060
 nowcode = "root"
 takedMessage = False
 
@@ -727,6 +727,7 @@ def getButtons(message):
         bot.send_message(message.chat.id, text="Пожалуйста, используйте кнопки или команду /start")
 
     print(nowcode)
+    print(message.chat.id)
 
 def sendMessageToAdmin():
     global _user
