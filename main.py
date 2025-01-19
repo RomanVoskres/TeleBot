@@ -1,6 +1,6 @@
 import os
 import telebot
-from telebot import types
+from telebot import TeleBot, types
 import LargeMessages
 import communication_method_with_user
 import enumProcedures
@@ -10,61 +10,71 @@ from communication_method_with_user import EnumCommunicationMethod
 from enumProcedures import Procedures
 from enumZones import Zones
 
-bot = telebot.TeleBot('6483439802:AAHr5IV25iNvy23PRpnQkXNec3LtCSqDUGY')
-_AdminID = 772136193 # 391388060
+bot = telebot.TeleBot('7884556392:AAGO8iekEv4ObROpDNST2dsDQkX2yDJkNUg')
+_AdminID = 772136193 # 772136193 # 391388060 админский
 
 _user = user.User
+
+@bot.message_handler(commands=['start'])
+def main(message):
+    markup = types.InlineKeyboardMarkup()
+    _buttonImClient = types.InlineKeyboardButton("👩 Я клиент", callback_data="client")
+    _buttonImMaster = types.InlineKeyboardButton("👑 Я мастер", callback_data="master")
+
+    markup.add(_buttonImClient, _buttonImMaster)
+    bot.send_message(message.chat.id, text=LargeMessages.root.format(message.from_user), reply_markup=markup)
 
 # Обработка контакта
 @bot.message_handler(content_types=['contact'])
 def contact_handler(message):
     global _user
-    if message.contact is not None and _user.phone_number is None:
-        phone_number = message.contact.phone_number
-        first_name = message.contact.first_name
-        last_name = message.contact.last_name
-        user_id = message.contact.user_id
+    if message.contact is not None:
+        if _user.phone_number is None:
+            phone_number = message.contact.phone_number
+            first_name = message.contact.first_name
+            last_name = message.contact.last_name
+            user_id = message.contact.user_id
 
-        _user.phone_number = phone_number
-        _user.first_name = first_name
-        _user.last_name = last_name
-        _user.user_id = user_id
+            _user.phone_number = phone_number
+            _user.first_name = first_name
+            _user.last_name = last_name
+            _user.user_id = user_id
 
-        #Обнуление что еще не выбрано
-        #_user.procedure = None
-        #_user.appointment_zone = None  # запоминает зону макияжа пользователя
-        _user.communication_method = None  # запоминает метод связи с пользователем
-        _user.want_consult = False  # Может хотеть на консультацию
-        _user.delalaTattoo_v_Broowushka = False
-        _user.delalaTattoo_v_zone = False
-        _user.want_send_photo = False
+            #Обнуление что еще не выбрано
+            #_user.procedure = None
+            #_user.appointment_zone = None  # запоминает зону макияжа пользователя
+            _user.communication_method = None  # запоминает метод связи с пользователем
+            _user.want_consult = False  # Может хотеть на консультацию
+            _user.delalaTattoo_v_Broowushka = False
+            _user.delalaTattoo_v_zone = False
+            _user.want_send_photo = False
 
         if _user.procedure is Procedures.tattoo: # Татуаж
-            if _user.comuflage is True:
-                message_text = f"{first_name}, очень приятно! \nВы выбрали 'камуфляж'.)"
+            if _user.comuflage is True and _user.appointment_zone is None:
+                message_text = f"{_user.first_name}, очень приятно! \nВы выбрали 'камуфляж'.)"
 
                 markup = types.InlineKeyboardMarkup()
                 _buttonMake = types.InlineKeyboardButton("Хочу записаться", callback_data="make_appointment_end")
                 _buttonPrice = types.InlineKeyboardButton("Узнать прайс", callback_data="price_tattoo")
                 _buttonCounseling = types.InlineKeyboardButton("Хочу на консультацию", callback_data="want_consult")
-                markup.add(_buttonMake, _buttonPrice, _buttonCounseling)
+                markup.add(_buttonMake).add(_buttonPrice).add(_buttonCounseling)
                 bot.send_message(message.chat.id, text=message_text.format(message.from_user), reply_markup=markup)
             else:
-                message_text = f"{first_name}, очень приятно! \nВы уже делали тауаж на этой зоне ранее? (Вы выбрали зону {enumZones.returnRuName(_user.appointment_zone)})"
+                message_text = f"{_user.first_name}, очень приятно! \nВы уже делали тауаж на этой зоне ранее? (Вы выбрали зону {enumZones.returnRuName(_user.appointment_zone)})"
 
                 markup = types.InlineKeyboardMarkup()
                 _buttonYes = types.InlineKeyboardButton("Да", callback_data="make_appointment_zone_yes")
                 _buttonNo = types.InlineKeyboardButton("Нет", callback_data="make_appointment_zone_no")
                 _buttonCounseling = types.InlineKeyboardButton("Хочу на консультацию", callback_data="want_consult")
-                markup.add(_buttonYes, _buttonNo, _buttonCounseling)
+                markup.add(_buttonYes).add(_buttonNo).add(_buttonCounseling)
                 bot.send_message(message.chat.id, text=message_text.format(message.from_user), reply_markup=markup)
         else: # Осветление таттуажа
-            message_text = f"{first_name}, очень приятно! \nЧто вы хотите узнать?)"
+            message_text = f"{_user.first_name}, очень приятно! \nЧто вы хотите узнать?)"
 
             markup = types.InlineKeyboardMarkup()
             _buttonPrice = types.InlineKeyboardButton("Прайс на осветление татуажа", callback_data="make_lightening_Price")
             _buttonMethods = types.InlineKeyboardButton("Способы осветления", callback_data="make_lightening_Methods")
-            markup.add(_buttonPrice, _buttonMethods)
+            markup.add(_buttonPrice).add(_buttonMethods)
             bot.send_message(message.chat.id, text=message_text.format(message.from_user), reply_markup=markup)
     else:
         bot.send_message(message.chat.id, "Пожалуйста, отправьте контакт, используя кнопку 'Отправить контакты'")
@@ -72,6 +82,7 @@ def contact_handler(message):
 @bot.callback_query_handler(func=lambda call: True)
 def callback_inline(call):
     global _user
+
     if call.data == "client":
         _user.procedure = None
 
@@ -88,7 +99,7 @@ def callback_inline(call):
         _buttonWantKnow = types.InlineKeyboardButton("Хочу узнать про повышение квалификации", callback_data="like_to_know")
         _buttonLearning = types.InlineKeyboardButton("Хочу пройти обучение с 0", callback_data="want_training")
         _buttonPoleznyashki = types.InlineKeyboardButton("Хочу полезняшек", callback_data="some_goodies")
-        markup.add(_buttonWantKnow, _buttonLearning, _buttonPoleznyashki)
+        markup.add(_buttonWantKnow).add(_buttonLearning).add(_buttonPoleznyashki)
         bot.send_message(call.message.chat.id, text=LargeMessages.aboutMaster.format(call.message.from_user), reply_markup=markup)
     elif call.data == "tattoo":
         _user.procedure = Procedures.tattoo
@@ -98,14 +109,14 @@ def callback_inline(call):
         _buttonLips = types.InlineKeyboardButton("Губы", callback_data="tattoo_lips")
         _buttonEyelids = types.InlineKeyboardButton("Веки", callback_data="tattoo_eyelids")
         _buttonCamouflage = types.InlineKeyboardButton("Камуфляж", callback_data="tattoo_camouflage")
-        markup.add(_buttonEyebrows, _buttonLips, _buttonEyelids, _buttonCamouflage)
+        markup.add(_buttonEyebrows).add(_buttonLips).add(_buttonEyelids).add(_buttonCamouflage)
         bot.send_message(call.message.chat.id, text="Что конкретно?".format(call.message.from_user), reply_markup=markup)
     elif call.data == "tattoo_lightening":
         _user.procedure = Procedures.lightening_tatto
 
         markup = types.InlineKeyboardMarkup()
-        _buttonYes = types.InlineKeyboardButton("Да", callback_data="yes_lightening")
-        _buttonNo = types.InlineKeyboardButton("Нет", callback_data="no_lightening")
+        _buttonYes = types.InlineKeyboardButton("Да", callback_data="lightening_yes")
+        _buttonNo = types.InlineKeyboardButton("Нет", callback_data="lightening_no")
         markup.add(_buttonYes, _buttonNo)
         bot.send_message(call.message.chat.id, text="У вас есть старый татуаж, который хотелось бы удалить или просто сделать светлее, правильно?".format(
                              call.message.from_user), reply_markup=markup)
@@ -113,55 +124,67 @@ def callback_inline(call):
     if _user.procedure is Procedures.tattoo:
         if call.data == "tattoo_brows":
             _user.appointment_zone = Zones.eyebrows
-            bot.send_message(call.message.chat.id, text=LargeMessages.aboutEyebrows.format(call.message.from_user))
 
             markup = types.InlineKeyboardMarkup()
-            _buttonNext = types.InlineKeyboardButton("Дальше", callback_data="general_point_tattoo")
-            _buttonBack = types.InlineKeyboardButton("Назад", callback_data="tattoo")
-            markup.add(_buttonNext, _buttonBack)
+            _buttonExamples = types.InlineKeyboardButton("Посмотреть примеры работ", callback_data="check_examples_tattoo")
+            _buttonSignUp = types.InlineKeyboardButton("Записаться", callback_data="signup")
+            _buttonLearnMore = types.InlineKeyboardButton("Узнать больше о татуаже", callback_data="about_tattoo")
+            _buttonPrice = types.InlineKeyboardButton("Узнать прайс", callback_data="know_price")
+            markup.add(_buttonExamples).add(_buttonSignUp).add(_buttonLearnMore).add(_buttonPrice)
+
+            bot.send_message(call.message.chat.id, text=LargeMessages.aboutEyebrows.format(call.message.from_user), reply_markup=markup)
         elif call.data == "tattoo_lips":
             _user.appointment_zone = Zones.lips
-            bot.send_message(call.message.chat.id, text=LargeMessages.aboutLips.format(call.message.from_user))
 
             markup = types.InlineKeyboardMarkup()
-            _buttonNext = types.InlineKeyboardButton("Дальше", callback_data="general_point_tattoo")
-            _buttonBack = types.InlineKeyboardButton("Назад", callback_data="tattoo")
-            markup.add(_buttonNext, _buttonBack)
+            _buttonExamples = types.InlineKeyboardButton("Посмотреть примеры работ", callback_data="check_examples_tattoo")
+            _buttonSignUp = types.InlineKeyboardButton("Записаться", callback_data="signup")
+            _buttonLearnMore = types.InlineKeyboardButton("Узнать больше о татуаже", callback_data="about_tattoo")
+            _buttonPrice = types.InlineKeyboardButton("Узнать прайс", callback_data="know_price")
+            markup.add(_buttonExamples).add(_buttonSignUp).add(_buttonLearnMore).add(_buttonPrice)
+
+            bot.send_message(call.message.chat.id, text=LargeMessages.aboutLips.format(call.message.from_user), reply_markup=markup)
         elif call.data == "tattoo_eyelids":
             _user.appointment_zone = Zones.eyelids
-            bot.send_message(call.message.chat.id, text=LargeMessages.aboutEyelids.format(call.message.from_user))
 
             markup = types.InlineKeyboardMarkup()
-            _buttonNext = types.InlineKeyboardButton("Дальше", callback_data="general_point_tattoo")
-            _buttonBack = types.InlineKeyboardButton("Назад", callback_data="tattoo")
-            markup.add(_buttonNext, _buttonBack)
+            _buttonExamples = types.InlineKeyboardButton("Посмотреть примеры работ", callback_data="check_examples_tattoo")
+            _buttonSignUp = types.InlineKeyboardButton("Записаться", callback_data="signup")
+            _buttonLearnMore = types.InlineKeyboardButton("Узнать больше о татуаже", callback_data="about_tattoo")
+            _buttonPrice = types.InlineKeyboardButton("Узнать прайс", callback_data="know_price")
+            markup.add(_buttonExamples).add(_buttonSignUp).add(_buttonLearnMore).add(_buttonPrice)
+
+            bot.send_message(call.message.chat.id, text=LargeMessages.aboutEyelids.format(call.message.from_user), reply_markup=markup)
         elif call.data == "tattoo_camouflage":
             _user.comuflage = True
-            bot.send_message(call.message.chat.id, text=LargeMessages.aboutCamouflage_0.format(call.message.from_user))
-            bot.send_message(call.message.chat.id, text=LargeMessages.aboutCamouflage_1.format(call.message.from_user))
+            _user.appointment_zone = None
 
             markup = types.InlineKeyboardMarkup()
-            _buttonNext = types.InlineKeyboardButton("Дальше", callback_data="general_point_tattoo")
-            _buttonBack = types.InlineKeyboardButton("Назад", callback_data="tattoo")
-            markup.add(_buttonNext, _buttonBack)
+            _buttonExamples = types.InlineKeyboardButton("Посмотреть примеры работ", callback_data="check_examples_tattoo")
+            _buttonSignUp = types.InlineKeyboardButton("Записаться", callback_data="signup")
+            _buttonLearnMore = types.InlineKeyboardButton("Узнать больше о татуаже", callback_data="about_tattoo")
+            _buttonPrice = types.InlineKeyboardButton("Узнать прайс", callback_data="know_price")
+            markup.add(_buttonExamples).add(_buttonSignUp).add(_buttonLearnMore).add(_buttonPrice)
+
+            bot.send_message(call.message.chat.id, text=LargeMessages.aboutCamouflage_0.format(call.message.from_user))
+            bot.send_message(call.message.chat.id, text=LargeMessages.aboutCamouflage_1.format(call.message.from_user), reply_markup=markup)
         elif call.data == "general_point_tattoo":
             markup = types.InlineKeyboardMarkup()
             _buttonExamples = types.InlineKeyboardButton("Посмотреть примеры работ", callback_data="check_examples_tattoo")
-            _buttonSignUp = types.InlineKeyboardButton("Записаться", callback_data="")
+            _buttonSignUp = types.InlineKeyboardButton("Записаться", callback_data="signup")
             _buttonLearnMore = types.InlineKeyboardButton("Узнать больше о татуаже", callback_data="about_tattoo")
             _buttonPrice = types.InlineKeyboardButton("Узнать прайс", callback_data="know_price")
-            markup.add(_buttonExamples, _buttonSignUp, _buttonLearnMore, _buttonPrice)
+            markup.add(_buttonExamples).add(_buttonSignUp).add(_buttonLearnMore).add(_buttonPrice)
             bot.send_message(call.message.chat.id, text="Идем дальше".format(call.message.from_user), reply_markup=markup)
         elif call.data == "check_examples_tattoo":
             markup = types.InlineKeyboardMarkup()
             _buttonEyebrows = types.InlineKeyboardButton("Брови", callback_data="check_examples_tattoo_brows")
             _buttonEyelids = types.InlineKeyboardButton("Веки", callback_data="check_examples_tattoo_eyelids")
             _buttonLips = types.InlineKeyboardButton("Губы", callback_data="check_examples_tattoo_lips")
-            markup.add(_buttonEyebrows, _buttonEyelids, _buttonLips)
+            markup.add(_buttonEyebrows).add(_buttonEyelids).add(_buttonLips)
             bot.send_message(call.message.chat.id, text="Какие примеры хотите посмотреть?".format(call.message.from_user), reply_markup=markup)
         elif call.data == "check_examples_tattoo_brows":
-            bot.send_message(call.message.chat.id,
-                             text="Примеры \n\n волосковой техники и пудрового напыления".format(call.message.from_user),
+            bot.send_message(call.message.chat.id, text="Примеры \n\n волосковой техники и пудрового напыления".format(call.message.from_user),
                              parse_mode='Markdown')
             image_paths = [os.path.join("other/PhotoExamplesTattooing/Eyebrows/Voloskovaya", file) for file in
                            os.listdir("other/PhotoExamplesTattooing/Eyebrows/Voloskovaya") if
@@ -175,18 +198,28 @@ def callback_inline(call):
             media_group = [telebot.types.InputMediaPhoto(open(image_path, 'rb')) for image_path in image_paths]
             bot.send_media_group(call.message.chat.id, media_group)
         elif call.data == "check_examples_tattoo_eyelids":
+            bot.send_message(call.message.chat.id, text="Примеры \n\n веки".format(call.message.from_user),
+                             parse_mode='Markdown')
             image_paths = [os.path.join("other/PhotoExamplesTattooing/Eyelids", file) for file in
                            os.listdir("other/PhotoExamplesTattooing/Eyelids") if
                            file.endswith(('.png', '.jpg', '.jpeg'))]
             media_group = [telebot.types.InputMediaPhoto(open(image_path, 'rb')) for image_path in image_paths]
             bot.send_media_group(call.message.chat.id, media_group)
         elif call.data == "check_examples_tattoo_lips":
+            bot.send_message(call.message.chat.id, text="Примеры \n\n губы".format(call.message.from_user),
+                             parse_mode='Markdown')
             image_paths = [os.path.join("other/PhotoExamplesTattooing/Lips", file) for file in
                            os.listdir("other/PhotoExamplesTattooing/Lips") if
                            file.endswith(('.png', '.jpg', '.jpeg'))]
             media_group = [telebot.types.InputMediaPhoto(open(image_path, 'rb')) for image_path in image_paths]
             bot.send_media_group(call.message.chat.id, media_group)
         elif call.data == "know_price":
+            image_paths = [os.path.join("other/Price/PriceTattoo", file) for file in
+                           os.listdir("other/Price/PriceTattoo") if
+                           file.endswith(('.png', '.jpg', '.jpeg'))]
+            media_group = [telebot.types.InputMediaPhoto(open(image_path, 'rb')) for image_path in image_paths]
+            bot.send_media_group(call.message.chat.id, media_group)
+            
             bot.send_message(call.message.chat.id, text=LargeMessages.aboutPrice.format(call.message.from_user))
         elif call.data == "about_tattoo":
             markup = types.InlineKeyboardMarkup()
@@ -199,7 +232,7 @@ def callback_inline(call):
             _buttontehnicks = types.InlineKeyboardButton("В каких техниках вы работаете?", callback_data="about_tattoo_tehnicks")
             _buttonYarche = types.InlineKeyboardButton("А можно сделать ПОЯРЧЕ?", callback_data="about_tattoo_Yarche")
             _buttondorogo = types.InlineKeyboardButton("Почему так дорого?", callback_data="about_tattoo_dorogo")
-            markup.row(_buttonhowlong, _buttoncorrect, _buttoncando, _buttonotkuda, _buttonhurt, _buttonalergy, _buttontehnicks, _buttonYarche, _buttondorogo)
+            markup.add(_buttonhowlong).add(_buttoncorrect).add(_buttoncando).add(_buttonotkuda).add(_buttonhurt).add(_buttonalergy).add(_buttontehnicks).add(_buttonYarche).add(_buttondorogo)
             bot.send_message(call.message.chat.id, text="Часто задаваемые вопросы:".format(call.message.from_user),
                              reply_markup=markup)
         elif call.data == "about_tattoo_howlong":
@@ -220,14 +253,12 @@ def callback_inline(call):
             bot.send_message(call.message.chat.id, text=LargeMessages.about_tattoo_Yarche.format(call.message.from_user))
         elif call.data == "about_tattoo_dorogo":
             bot.send_message(call.message.chat.id, text=LargeMessages.about_tattoo_dorogo.format(call.message.from_user))
-
         #Запись
         elif call.data == "signup":
-            markup = types.InlineKeyboardMarkup()
-            button_signup = types.InlineKeyboardButton('Отправить контакты', request_contact=True) #запрос
+            markup = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
+            button_signup = types.KeyboardButton("Отправить контакты", request_contact=True)
             markup.add(button_signup)
-            bot.send_message(call.message.chat.id, "Отлично, давайте познакомимся поближе!", reply_markup=markup)
-
+            bot.send_message(call.message.chat.id, "Отлично, давайте познакомимся поближе!".format(call.message.from_user), reply_markup=markup)
         elif call.data == "make_appointment_zone_yes":
             _user.delalaTattoo_v_zone = True
 
@@ -243,7 +274,7 @@ def callback_inline(call):
             markup = types.InlineKeyboardMarkup()
             _buttonPrice = types.InlineKeyboardButton("Узнать прайс", callback_data="price_tattoo")
             _buttonMake = types.InlineKeyboardButton("Записаться", callback_data="make_appointment_end")
-            markup.add(_buttonPrice, _buttonMake)
+            markup.add(_buttonPrice).add(_buttonMake)
             bot.send_message(call.message.chat.id, text="Супер! Мы безумно ценим тех, кто с нами НАДОЛГО и не променяет ни какого другого! \nПоэтому дарим ВАМ скидку на обновление 20% от стоимости первичной процедуры в прайсе.".format(
                                  call.message.from_user), reply_markup=markup)
         elif call.data == "make_appointment_nocenter":
@@ -252,7 +283,7 @@ def callback_inline(call):
             markup = types.InlineKeyboardMarkup()
             _buttonSendPhoto = types.InlineKeyboardButton("Прислать фото зоны, на которой сделан татуаж?", callback_data="make_appointment_sendPhoto")
             _buttonConsult = types.InlineKeyboardButton("Прийти на бесплатную консультацию", callback_data="want_consult")
-            markup.add(_buttonSendPhoto, _buttonConsult)
+            markup.add(_buttonSendPhoto).add(_buttonConsult)
             bot.send_message(call.message.chat.id, text="Мы не всегда берёмся за работу других мастеров. Только если мы уверены, что получится натурально и красиво 😍 \nСкажите, как вам будет удобнее:".format(
                                  call.message.from_user), reply_markup=markup)
         elif call.data == "make_appointment_sendPhoto":
@@ -269,7 +300,7 @@ def callback_inline(call):
             markup = types.InlineKeyboardMarkup()
             _buttonPrice = types.InlineKeyboardButton("Узнать прайс", callback_data="price_tattoo")
             _buttonMake = types.InlineKeyboardButton("Записаться", callback_data="make_appointment_end")
-            markup.add(_buttonPrice, _buttonMake)
+            markup.add(_buttonPrice).add(_buttonMake)
             bot.send_message(call.message.chat.id, text="Хорошо. Что делаем дальше?".format(call.message.from_user),
                              reply_markup=markup)
         elif call.data == "want_consult":
@@ -281,24 +312,17 @@ def callback_inline(call):
             bot.send_message(call.message.chat.id, text="Хорошо, давайте запишемся.".format(call.message.from_user),
                              reply_markup=markup)
         elif call.data == "price_tattoo":
-            if _user.appointment_zone is None: #прайс за осветление
-                image_paths = [os.path.join("other/Price/PriceTattoo", file) for file in
-                               os.listdir("other/Price/PriceTattoo") if
-                               file.endswith(('.png', '.jpg', '.jpeg'))]
-                media_group = [telebot.types.InputMediaPhoto(open(image_path, 'rb')) for image_path in image_paths]
-                bot.send_media_group(call.message.chat.id, media_group)
-            else:
-                image_paths = [os.path.join("other/Price/PriceDeletion", file) for file in
-                               os.listdir("other/Price/PriceDeletion") if
-                               file.endswith(('.png', '.jpg', '.jpeg'))]
-                media_group = [telebot.types.InputMediaPhoto(open(image_path, 'rb')) for image_path in image_paths]
-                bot.send_media_group(call.message.chat.id, media_group)
+            image_paths = [os.path.join("other/Price/PriceTattoo", file) for file in
+                           os.listdir("other/Price/PriceTattoo") if
+                           file.endswith(('.png', '.jpg', '.jpeg'))]
+            media_group = [telebot.types.InputMediaPhoto(open(image_path, 'rb')) for image_path in image_paths]
+            bot.send_media_group(call.message.chat.id, media_group)
 
         elif call.data == "make_appointment_end": #-----------------------запись финал-----------------
             markup = types.InlineKeyboardMarkup()
             _buttonPhone = types.InlineKeyboardButton("Позвонил", callback_data="call_connect")
             _buttonWatsUp = types.InlineKeyboardButton("Отписал в воцап", callback_data="whatsapp_connect")
-            markup.add(_buttonPhone, _buttonWatsUp)
+            markup.add(_buttonPhone).add(_buttonWatsUp)
             bot.send_message(call.message.chat.id, text="Вам будет удобнее, чтобы наш администартор позвонил или написал в воцап?".format(
                                  call.message.from_user), reply_markup=markup)
         elif call.data == "call_connect":
@@ -313,12 +337,12 @@ def callback_inline(call):
     #------------------------------ТУТ ВЕТКА ОСВЕТЛЕНИЯ (Левая правая часть)------------------------------------------
     #_user.appointment_zone использовать None что будет значить - осветление
     if _user.procedure is Procedures.lightening_tatto:
-        if call.data == "yes_lightening":
-            markup = types.InlineKeyboardMarkup()
-            button_signup = types.InlineKeyboardButton('Отправить контакты', request_contact=True)  # запрос
+        if call.data == "lightening_yes":
+            markup = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
+            button_signup = types.KeyboardButton("Отправить контакты", request_contact=True)
             markup.add(button_signup)
-            bot.send_message(call.message.chat.id, text="Отлично, давайте познакомимся поближе!".format(call.message.from_user))
-        elif call.data == "no_lightening": #Смена процедуры
+            bot.send_message(call.message.chat.id, text="Отлично, давайте познакомимся поближе!".format(call.message.from_user), reply_markup=markup)
+        elif call.data == "lightening_no": #Смена процедуры
             markup = types.InlineKeyboardMarkup()
             _buttonYes = types.InlineKeyboardButton("Да", callback_data="tattoo")
             _buttonNo = types.InlineKeyboardButton("Нет", callback_data="client")
@@ -334,7 +358,7 @@ def callback_inline(call):
             markup = types.InlineKeyboardMarkup()
             _buttonLightening = types.InlineKeyboardButton("Осветление", callback_data="make_lightening_end")
             _buttonConsult = types.InlineKeyboardButton("Консультация", callback_data="make_lightening_end_consult")
-            markup.add(_buttonLightening, _buttonConsult)
+            markup.add(_buttonLightening).add(_buttonConsult)
             bot.send_message(call.message.chat.id, text="Подобрать вам время на осветление татуажа или консультацию?".format(call.message.from_user), reply_markup=markup)
         elif call.data == "make_lightening_Methods":
             bot.send_message(call.message.chat.id, text=LargeMessages.aboutTattoo_lightening.format(call.message.from_user))
@@ -345,13 +369,13 @@ def callback_inline(call):
             markup = types.InlineKeyboardMarkup()
             _buttonPhone = types.InlineKeyboardButton("Позвонил", callback_data="call_connect")
             _buttonWatsUp = types.InlineKeyboardButton("Отписал в воцап", callback_data="whatsapp_connect")
-            markup.add(_buttonPhone, _buttonWatsUp)
+            markup.add(_buttonPhone).add(_buttonWatsUp)
             bot.send_message(call.message.chat.id, text="Вам будет удобнее, чтобы наш администартор позвонил или написал в воцап?".format(call.message.from_user), reply_markup=markup)
         elif call.data == "make_lightening_end":  # -----------------------запись финал-----------------
             markup = types.InlineKeyboardMarkup()
             _buttonPhone = types.InlineKeyboardButton("Позвонил", callback_data="call_connect")
             _buttonWatsUp = types.InlineKeyboardButton("Отписал в воцап", callback_data="whatsapp_connect")
-            markup.add(_buttonPhone, _buttonWatsUp)
+            markup.add(_buttonPhone).add(_buttonWatsUp)
             bot.send_message(call.message.chat.id, text="Вам будет удобнее, чтобы наш администартор позвонил или написал в воцап?".format(call.message.from_user), reply_markup=markup)
         elif call.data == "call_connect":
             _user.communication_method = EnumCommunicationMethod.Call
@@ -370,7 +394,7 @@ def callback_inline(call):
             _buttonEyeBrows = types.InlineKeyboardButton("Пудровые брови", callback_data="master_tehnic_price_1")
             _buttonLips = types.InlineKeyboardButton("Губы", callback_data="master_tehnic_price_1")
             _buttonVoloski = types.InlineKeyboardButton("Волоски", callback_data="master_tehnic_price_2")
-            markup.add(_buttonArrows, _buttonEyeBrows, _buttonLips, _buttonVoloski)
+            markup.add(_buttonArrows).add(_buttonEyeBrows).add(_buttonLips).add(_buttonVoloski)
             bot.send_message(call.message.chat.id, text=LargeMessages.aboutQualifications.format(call.message.from_user), reply_markup=markup)
         elif call.data == "master_tehnic_price_1":
             image_paths = [os.path.join("other/PriceTraining/Couple", file) for file in
@@ -378,12 +402,28 @@ def callback_inline(call):
                            file.endswith(('.png', '.jpg', '.jpeg'))]
             media_group = [telebot.types.InputMediaPhoto(open(image_path, 'rb')) for image_path in image_paths]
             bot.send_media_group(call.message.chat.id, media_group)
+
+            markup = types.InlineKeyboardMarkup()
+            _buttonQuest = types.InlineKeyboardButton("Задать Марине лично вопрос", callback_data="master_quest")
+            _buttonSocial = types.InlineKeyboardButton("Подписаться на соцсети", callback_data="master_social")
+            _buttongoodies = types.InlineKeyboardButton("Полезняшки", callback_data="some_goodies")
+            _buttonSubscribe = types.InlineKeyboardButton("Записаться на обучение", callback_data="master_make")
+            markup.add(_buttonQuest).add(_buttonSocial).add(_buttongoodies).add(_buttonSubscribe)
+            bot.send_message(call.message.chat.id, text="Ну что, моя королева, давай решим, куда двигаемся дальше?".format(call.message.from_user), reply_markup=markup)
         elif call.data == "master_tehnic_price_2":
             image_paths = [os.path.join("other/PriceTraining", file) for file in
                            os.listdir("other/PriceTraining") if
                            file.endswith(('.png', '.jpg', '.jpeg'))]
             media_group = [telebot.types.InputMediaPhoto(open(image_path, 'rb')) for image_path in image_paths]
             bot.send_media_group(call.message.chat.id, media_group)
+
+            markup = types.InlineKeyboardMarkup()
+            _buttonQuest = types.InlineKeyboardButton("Задать Марине лично вопрос", callback_data="master_quest")
+            _buttonSocial = types.InlineKeyboardButton("Подписаться на соцсети", callback_data="master_social")
+            _buttongoodies = types.InlineKeyboardButton("Полезняшки", callback_data="some_goodies")
+            _buttonSubscribe = types.InlineKeyboardButton("Записаться на обучение", callback_data="master_make")
+            markup.add(_buttonQuest).add(_buttonSocial).add(_buttongoodies).add(_buttonSubscribe)
+            bot.send_message(call.message.chat.id, text="Ну что, моя королева, давай решим, куда двигаемся дальше?".format(call.message.from_user), reply_markup=markup)
         elif call.data == "want_training":
             markup = types.InlineKeyboardMarkup()
             _buttonSubscribe = types.InlineKeyboardButton("Подписаться на соцсети", callback_data="master_social")
@@ -396,7 +436,7 @@ def callback_inline(call):
             _buttonPlan = types.InlineKeyboardButton("Контент план на месяц", callback_data="some_goodies_content")
             _buttonCheckList2 = types.InlineKeyboardButton("Чек-лист про пигменты: 'Органика VS Минералы'", callback_data="some_goodies_checkPigment")
             _buttonGuide = types.InlineKeyboardButton("Гайд: 'Рассылки для бьюти мастера'", callback_data="some_goodies_guide")
-            markup.add(_buttonCheckList1, _buttonPlan, _buttonCheckList2, _buttonGuide)
+            markup.add(_buttonCheckList1).add(_buttonPlan).add(_buttonCheckList2).add(_buttonGuide)
             bot.send_message(call.message.chat.id, text="Выбирай, моя красотка, что тебе актуальнее.".format(call.message.from_user),
                              reply_markup=markup)
 
@@ -435,10 +475,10 @@ def callback_inline(call):
             _buttonSocial = types.InlineKeyboardButton("Подписаться на соцсети", callback_data="master_social")
             _buttongoodies = types.InlineKeyboardButton("Полезняшки", callback_data="some_goodies")
             _buttonSubscribe = types.InlineKeyboardButton("Записаться на обучение", callback_data="master_make")
-            markup.add(_buttonQuest, _buttonSocial, _buttongoodies, _buttonSubscribe)
+            markup.add(_buttonQuest).add(_buttonSocial).add(_buttongoodies).add(_buttonSubscribe)
             bot.send_message(call.message.chat.id, text="Ну что, моя королева, давай решим, куда двигаемся дальше?".format(call.message.from_user), reply_markup=markup)
         elif call.data == "master_quest":
-            bot.send_contact(chat_id=call.message.chat.id, phone_number='+79601088966', first_name='Марина')
+            bot.send_message(call.message.chat.id, text="https://t.me/marina_browushka".format(call.message.from_user))
         elif call.data == "master_social":
             bot.send_message(call.message.chat.id, text=LargeMessages.aboutSocial.format(call.message.from_user))
         elif call.data == "master_make":
@@ -465,15 +505,6 @@ def getMessage(message): #Тут принимается сообщение по�
         bot.send_message(message.chat.id, text="Вы проверили свою анкету и уверены, что хотите её отправить?".format(message.from_user),
                          reply_markup=markup)
 
-@bot.message_handler(commands=['start'])
-def main(message):
-    markup = types.InlineKeyboardMarkup()
-    _buttonImClient = types.InlineKeyboardButton("👩 Я клиент", callback_data="client")
-    _buttonImMaster = types.InlineKeyboardButton("👑 Я мастер", callback_data="master")
-
-    markup.add(_buttonImClient, _buttonImMaster)
-    bot.send_message(message.chat.id, text=LargeMessages.root.format(message.from_user), reply_markup=markup)
-
 
 
 def sendMessageToAdmin():
@@ -482,6 +513,7 @@ def sendMessageToAdmin():
                                     f"Имя/Фамилия: {_user.first_name} {_user.last_name} \n\n"
                                     f"Услуга: {enumProcedures.returnRuName(_user.procedure)}\n"
                                     f"Зона таттуажа: {enumZones.returnRuName(_user.appointment_zone)}\n"
+                                    f"Камуфляж: {_user.comuflage}\n"
                                     f"Делал ли клиент таттуаж в этой зоне: {_user.delalaTattoo_v_zone}\n"
                                     f"Если делал, то в Бровушке?: {_user.delalaTattoo_v_Broowushka}\n"
                                     f"Клиент хочет отослать фото зоны чтобы обсудить таттуаж с мастером: {_user.want_send_photo}\n\n"
